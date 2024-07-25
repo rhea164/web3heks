@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
@@ -7,26 +7,29 @@ import { Entypo, Feather } from '@expo/vector-icons';
 
 import UserProfileScreen from './src/screens/UserProfile';
 import RewardsScreen from './src/screens/RewardsScreen';
+import HomeScreen from './src/screens/HomeScreen';
+import VerificationScreen from './src/screens/VerificationScreen';
+import NewPostScreen from './src/screens/NewPostScreen';
 
 const Stack = createStackNavigator();
 const Tab = createMaterialBottomTabNavigator();
 
-const HomeScreen = () => (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Home Screen</Text>
-    </View>
+const HomeStack = () => (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="HomeScreenPage" component={HomeScreen} />
+    </Stack.Navigator>
 );
 
-const VerifyScreen = () => (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Verify Screen</Text>
-    </View>
+const VerifyStack = () => (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="VerificationScreen" component={VerificationScreen} />
+    </Stack.Navigator>
 );
 
-const NewPostScreen = () => (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>New Post Screen</Text>
-    </View>
+const NewPostStack = () => (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="NewPostScreen" component={NewPostScreen} />
+</Stack.Navigator>
 );
 
 const ProfileStack = () => (
@@ -50,7 +53,7 @@ const TabNavigator = () => (
     >
         <Tab.Screen
             name="Home"
-            component={HomeScreen}
+            component={HomeStack}
             options={{
                 tabBarIcon: ({ color }) => (
                     <Entypo name="home" size={24} color={color} />
@@ -59,7 +62,7 @@ const TabNavigator = () => (
         />
         <Tab.Screen
             name="Verify"
-            component={VerifyScreen}
+            component={VerifyStack}
             options={{
                 tabBarIcon: ({ color }) => (
                     <Feather name="check-circle" size={24} color={color} />
@@ -68,7 +71,7 @@ const TabNavigator = () => (
         />
         <Tab.Screen
             name="Post"
-            component={NewPostScreen}
+            component={NewPostStack}
             options={{
                 tabBarIcon: ({ color }) => (
                     <Feather name="plus-circle" size={24} color={color} />
