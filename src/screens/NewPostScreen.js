@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput, Image, Keyboard } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput, Image, Keyboard, Alert } from 'react-native';
 import { Text, Button, Icon, Avatar } from '@rneui/themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
 
-
-const NewPostScreen = ({ navigation, route }) => {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
+const NewPostScreen = ({ navigation }) => {
+    const [deed, setDeed] = useState('');
     const [image, setImage] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+
     const dismissKeyboard = () => {
         Keyboard.dismiss();
     };
+
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -25,21 +27,43 @@ const NewPostScreen = ({ navigation, route }) => {
         }
     };
 
-    const handlePost = () => {
-        if (title && description) {
-            const newPost = {
-                id: Date.now().toString(),
-                user: 'Karen', // Replace with actual user name
-                avatar: 'https://randomuser.me/api/portraits/women/41.jpg', // Replace with actual user avatar
-                title,
-                description,
-                image: image || 'https://via.placeholder.com/400x250',
-                likes: 0,
-                comments: 0,
-            };
+    const handleVerify = async () => {
+        if (!image || !deed) {
+            Alert.alert('Error', 'Please upload an image and enter a deed.');
+            return;
+        }
 
-            route.params.addNewPost(newPost);
-            navigation.goBack();
+        setIsLoading(true);
+
+        const formData = new FormData();
+        formData.append('image', {
+            uri: image,
+            type: 'image/jpeg',
+            name: 'image.jpg',
+        });
+        formData.append('deed', deed);
+
+        try {
+            const response = await axios.post('http://10.1.98.18:5000/verify_deed', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            console.log('Response:', response.data.result.toLowerCase().replace(/\s+/g, ' ').trim());
+            if (response.data.result.toLowerCase().replace(/\s+/g, ' ').trim() === 'yes') {
+                
+                console.log('Condition met: Approved');
+                Alert.alert('Approved', 'Your deed has been verified and approved!');
+                navigation.goBack();
+            } else {
+                console.log('Condition not met: Not Approved');
+                Alert.alert('Not Approved', 'The deed could not be verified based on the image.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Alert.alert('Error', 'An error occurred while verifying the deed.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -51,24 +75,15 @@ const NewPostScreen = ({ navigation, route }) => {
                     source={{ uri: 'https://randomuser.me/api/portraits/women/41.jpg' }}
                     size="small"
                 />
-                <Text h4 style={styles.headerTitle}>New Post</Text>
+                <Text h4 style={styles.headerTitle}>Verify Deed</Text>
             </View>
             <View style={styles.inputContainer}>
                 <TextInput
                     style={styles.input}
-                    placeholder="Enter title"
+                    placeholder="Enter deed"
                     placeholderTextColor="#8899AA"
-                    value={title}
-                    onChangeText={setTitle}
-                />
-                <TextInput
-                    style={[styles.input, styles.descriptionInput]}
-                    placeholder="Enter description"
-                    placeholderTextColor="#8899AA"
-                    multiline
-                    numberOfLines={4}
-                    value={description}
-                    onChangeText={setDescription}
+                    value={deed}
+                    onChangeText={setDeed}
                 />
                 <TouchableOpacity style={styles.imageUpload} onPress={pickImage}>
                     {image ? (
@@ -76,16 +91,16 @@ const NewPostScreen = ({ navigation, route }) => {
                     ) : (
                         <>
                             <Icon name="upload" type="feather" color="#8899AA" size={24} />
-                            <Text style={styles.uploadText}>Upload media</Text>
+                            <Text style={styles.uploadText}>Upload image</Text>
                         </>
                     )}
                 </TouchableOpacity>
             </View>
             <Button
-                title="Post"
-                onPress={handlePost}
-                buttonStyle={styles.postButton}
-                disabled={!title || !description}
+                title={isLoading ? "Verifying..." : "Verify Deed"}
+                onPress={handleVerify}
+                buttonStyle={styles.verifyButton}
+                disabled={isLoading || !image || !deed}
             />
         </SafeAreaView>
     );
@@ -141,5 +156,7 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
 });
+
+
 
 export default NewPostScreen;
