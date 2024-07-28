@@ -1,0 +1,10 @@
+/Users/rheamenezes/Desktop/Rhea_is_Profesh/hackathons_competitions/web3HackOnline/web3heks/solana-program/target/release/deps/libautocfg-7704656078ce5821.rmeta: /Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/lib.rs /Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/error.rs /Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/rustc.rs /Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/version.rs
+
+/Users/rheamenezes/Desktop/Rhea_is_Profesh/hackathons_competitions/web3HackOnline/web3heks/solana-program/target/release/deps/libautocfg-7704656078ce5821.rlib: /Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/lib.rs /Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/error.rs /Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/rustc.rs /Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/version.rs
+
+/Users/rheamenezes/Desktop/Rhea_is_Profesh/hackathons_competitions/web3HackOnline/web3heks/solana-program/target/release/deps/autocfg-7704656078ce5821.d: /Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/lib.rs /Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/error.rs /Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/rustc.rs /Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/version.rs
+
+/Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/lib.rs:
+/Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/error.rs:
+/Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/rustc.rs:
+/Users/rheamenezes/.cargo/registry/src/index.crates.io-6f17d22bba15001f/autocfg-1.3.0/src/version.rs:

@@ -1,0 +1,1 @@
+/Users/rheamenezes/Desktop/Rhea_is_Profesh/hackathons_competitions/web3HackOnline/web3heks/solana-program/target/sbf-solana-solana/release/libweb3hecks_program.rlib: /Users/rheamenezes/Desktop/Rhea_is_Profesh/hackathons_competitions/web3HackOnline/web3heks/solana-program/src/lib.rs

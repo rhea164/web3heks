@@ -1,0 +1,15 @@
+[package]
+name = "web3hecks-program"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+solana-program = "1.18.8"
+thiserror = "1.0.49"
+borsh = "0.10.3"
+
+[dev-dependencies]
+solana-sdk = "1.18.8"
+
+[lib]
+crate-type = ["cdylib", "lib"]
