@@ -3,17 +3,21 @@ import { View, StyleSheet, TouchableOpacity, TextInput, Image, Keyboard, Alert }
 import { Text, Button, Icon, Avatar } from '@rneui/themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import { Context } from '../context/PostContext';
+import { Context as PostContext } from '../context/PostContext';
+import { Context as BalanceContext } from '../context/BalanceContext';
+
 import axios from 'axios';
 
 
 const NewPostScreen = ({ navigation, route }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [deed, setDeed] = useState('');
-    const { addPost } = useContext(Context);
+    const { addPost } = useContext(PostContext);
+    const { state, updateBalance, updateContributions } = useContext(BalanceContext);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [image, setImage] = useState(null);
+
     const dismissKeyboard = () => {
         Keyboard.dismiss();
     };
@@ -48,67 +52,67 @@ const NewPostScreen = ({ navigation, route }) => {
         navigation.goBack();
     };
 
-const handleVerify = async () => {
-    if (!image || !deed) {
-        Alert.alert('Error', 'Please upload an image and enter a deed.');
-        return;
-    }
-
-    setIsLoading(true);
-
-    const formData = new FormData();
-    formData.append('image', {
-        uri: image,
-        type: 'image/jpeg',
-        name: 'image.jpg',
-    });
-    formData.append('deed', deed);
-
-    // 192.168.1.4:8000
-
-    try {
-        const response = await axios.post('http://10.1.98.18:5000/verify_deed', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        console.log('Response:', response.data.result.toLowerCase().replace(/\s+/g, ' ').trim());
-        if (response.data.result.toLowerCase().replace(/\s+/g, ' ').trim() === 'yes') {
-            
-            console.log('Condition met: Approved');
-            Alert.alert('Approved', 'Your deed has been verified and approved!');
-            navigation.goBack();
-        } else {
-            console.log('Condition not met: Not Approved');
-            Alert.alert('Not Approved', 'The deed could not be verified based on the image.');
+    const handleVerify = async () => {
+        if (!image || !deed) {
+            Alert.alert('Error', 'Please upload an image and enter a deed.');
+            return;
         }
-    } catch (error) {
-        console.error('Error:', error);
-        Alert.alert('Error', 'An error occurred while verifying the deed.');
-    } finally {
-        setIsLoading(false);
-    }
-};
 
-return (
-            <SafeAreaView style={styles.container} onTouchStart={dismissKeyboard}>
-                <View style={styles.header}>
-                    <Avatar
-                        rounded
-                        source={{ uri: 'https://randomuser.me/api/portraits/women/41.jpg' }}
-                        size="small"
-                    />
-                    <Text h4 style={styles.headerTitle}>Verify Deed</Text>
-                </View>
-                <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Enter deed"
-                        placeholderTextColor="#8899AA"
-                        value={deed}
-                        onChangeText={setDeed}
-                    />
-                    <TextInput
+        setIsLoading(true);
+
+        const formData = new FormData();
+        formData.append('image', {
+            uri: image,
+            type: 'image/jpeg',
+            name: 'image.jpg',
+        });
+        formData.append('deed', deed);
+
+        // 10.1.98.18:5000
+
+        try {
+            const response = await axios.post('http://192.168.1.4:8000/verify_deed', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            console.log('Response:', response.data.result.toLowerCase().replace(/\s+/g, ' ').trim());
+            if (response.data.result.toLowerCase().replace(/\s+/g, ' ').trim() === 'yes') {
+                updateBalance(state.balance + 0.125);
+                updateContributions(state.userContributions + 1);
+                Alert.alert('Approved', 'Your deed has been verified and approved! You earned 0.125 SOL.');
+                navigation.goBack();
+            } else {
+                console.log('Condition not met: Not Approved');
+                Alert.alert('Not Approved', 'The deed could not be verified based on the image.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Alert.alert('Error', 'An error occurred while verifying the deed.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <SafeAreaView style={styles.container} onTouchStart={dismissKeyboard}>
+            <View style={styles.header}>
+                <Avatar
+                    rounded
+                    source={{ uri: 'https://randomuser.me/api/portraits/women/41.jpg' }}
+                    size="small"
+                />
+                <Text h4 style={styles.headerTitle}>Verify Deed</Text>
+            </View>
+            <View style={styles.inputContainer}>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Enter deed"
+                    placeholderTextColor="#8899AA"
+                    value={deed}
+                    onChangeText={setDeed}
+                />
+                <TextInput
                     style={[styles.input, styles.descriptionInput]}
                     placeholder="Enter description"
                     placeholderTextColor="#8899AA"
@@ -117,32 +121,32 @@ return (
                     value={description}
                     onChangeText={setDescription}
                 />
-                    <TouchableOpacity style={styles.imageUpload} onPress={pickImage}>
-                        {image ? (
-                            <Image source={{ uri: image }} style={styles.uploadedImage} />
-                        ) : (
-                            <>
-                                <Icon name="upload" type="feather" color="#8899AA" size={24} />
-                                <Text style={styles.uploadText}>Upload image</Text>
-                            </>
-                        )}
-                    </TouchableOpacity>
-                </View>
-                <Button
-                    title={isLoading ? "Verifying..." : "Verify Deed"}
-                    onPress={handleVerify}
-                    buttonStyle={styles.verifyButton}
-                    disabled={isLoading || !image || !deed}
-                />
-                 <Button
+                <TouchableOpacity style={styles.imageUpload} onPress={pickImage}>
+                    {image ? (
+                        <Image source={{ uri: image }} style={styles.uploadedImage} />
+                    ) : (
+                        <>
+                            <Icon name="upload" type="feather" color="#8899AA" size={24} />
+                            <Text style={styles.uploadText}>Upload image</Text>
+                        </>
+                    )}
+                </TouchableOpacity>
+            </View>
+            <Button
+                title={isLoading ? "Verifying..." : "Verify Deed"}
+                onPress={handleVerify}
+                buttonStyle={styles.verifyButton}
+                disabled={isLoading || !image || !deed}
+            />
+            <Button
                 title="Post"
                 onPress={handlePost}
                 buttonStyle={styles.postButton}
                 disabled={!deed || !description}
             />
-            </SafeAreaView>
-        );
-    };
+        </SafeAreaView>
+    );
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -188,7 +192,7 @@ const styles = StyleSheet.create({
         height: '100%',
         borderRadius: 10,
     },
-    verifyButton:{
+    verifyButton: {
         backgroundColor: '#4ECDC4',
         marginHorizontal: 20,
     },

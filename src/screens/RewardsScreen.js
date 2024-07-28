@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, StyleSheet, FlatList, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { Text, Button, Icon, SearchBar, Card, Overlay } from '@rneui/themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
+import { Context as BalanceContext } from '../context/BalanceContext';
 import axios from 'axios';
 
 const RewardCard = ({ title, points, quantity_left, description, color }) => (
@@ -23,6 +24,7 @@ const RewardsScreen = () => {
   const [filteredRewards, setFilteredRewards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const { state, updateBalance, updateContributions, updateBadges } = useContext(BalanceContext);
 
   const categories = ['class', 'food', 'merch', 'event', 'other'];
 
@@ -30,7 +32,8 @@ const RewardsScreen = () => {
 
   useEffect(() => {
     fetchRewards();
-  }, []);
+    checkAndUpdateBadges();
+  }, [state.userContributions]);
 
   useEffect(() => {
     setFilteredRewards(
@@ -39,6 +42,36 @@ const RewardsScreen = () => {
       )
     );
   }, [search, rewards]);
+
+  //10.1.98.18:5000
+  //192.168.1.4:8000
+
+  const purchaseCourse = (courseTitle, points) => {
+    const cost = points/1000; // 0.25 SOL
+    if (state.balance >= cost) {
+      updateBalance(state.balance - cost);
+      Alert.alert('Purchase Successful', `You have purchased "${courseTitle}" for ${cost} SOL`);
+    } else {
+      Alert.alert('Insufficient Balance', 'You do not have enough SOL to purchase this course');
+    }
+  };
+
+  const checkAndUpdateBadges = () => {
+    const newBadges = [...state.badges];
+    if (state.userContributions >= 40 && !newBadges.includes('platinum')) {
+      newBadges.push('platinum');
+    } else if (state.userContributions >= 30 && !newBadges.includes('gold')) {
+      newBadges.push('gold');
+    } else if (state.userContributions >= 20 && !newBadges.includes('silver')) {
+      newBadges.push('silver');
+    } else if (state.userContributions >= 10 && !newBadges.includes('bronze')) {
+      newBadges.push('bronze');
+    }
+    if (newBadges.length > state.badges.length) {
+      updateBadges(newBadges);
+      Alert.alert('New Badge Earned!', `You've earned a new badge: ${newBadges[newBadges.length - 1]}`);
+    }
+  };
 
   const fetchRewards = async () => {
     try {
@@ -155,7 +188,12 @@ const RewardsScreen = () => {
       ) : (
         <FlatList
           data={filteredRewards}
-          renderItem={({ item }) => <RewardCard {...item} />}
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => purchaseCourse(item.title, item.points)}>
+          <RewardCard {...item} />
+          </TouchableOpacity>
+          
+          )}
           keyExtractor={(item, index) => index.toString()}
           ListHeaderComponent={<Text h4 style={styles.sectionTitle}>Rewards</Text>}
         />

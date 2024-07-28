@@ -1,13 +1,15 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Text, Button, Icon, ListItem, Avatar } from '@rneui/themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Entypo } from '@expo/vector-icons';
 import { Feather } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
+import { Context as BalanceContext } from '../context/BalanceContext';
 
 
 const UserProfileScreen = () => {
+  const { state } = useContext(BalanceContext);
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -24,16 +26,22 @@ const UserProfileScreen = () => {
 
         <View style={styles.tokenContainer}>
           <MaterialIcons name="token" color="#4A90E2" size={30} />
-          <Text style={styles.tokenPoints}>250</Text>
-          <Text style={styles.tokenLabel}>Token Points</Text>
+          <Text style={styles.tokenPoints}>{state.balance.toFixed(3)}</Text>
+          <Text style={styles.tokenLabel}>SOL Balance</Text>
           <Icon name="chevron-right" type="feather" color="#4A90E2" />
         </View>
 
-        <Button
-          title="Claim your badge!"
-          buttonStyle={styles.badgeButton}
-          titleStyle={styles.badgeButtonText}
-        />
+        <View style={styles.badgesContainer}>
+          <Text style={styles.badgesTitle}>Your Badges</Text>
+          <View style={styles.badgesList}>
+            {state.badges.map((badge, index) => (
+              <View key={index} style={styles.badge}>
+                <Icon name="star" type="font-awesome" color="#FFD700" size={30} />
+                <Text style={styles.badgeText}>{badge}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
 
         <Text h4 style={styles.latestLabel}>Latest</Text>
 
@@ -117,6 +125,31 @@ const styles = StyleSheet.create({
   coursePoints: {
     color: '#4A90E2',
   },
+  badgesContainer: {
+    backgroundColor: '#2A365A',
+    borderRadius: 10,
+    padding: 15,
+    margin: 20,
+  },
+  badgesTitle: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  badgesList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  badge: {
+    alignItems: 'center',
+    marginRight: 15,
+    marginBottom: 10,
+  },
+  badgeText: {
+    color: '#FFF',
+    marginTop: 5,
+  }
 //   navbar: {
 //     flexDirection: 'row',
 //     justifyContent: 'space-around',
