@@ -1,31 +1,17 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { Text, Button, Icon, SearchBar, Card, Overlay } from '@rneui/themed';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
+import axios from 'axios';
 
-const PopularCard = ({ title, points, downloads, color }) => (
-  <Card containerStyle={[styles.popularCard, { backgroundColor: color }]}>
+const RewardCard = ({ title, points, quantity_left, description, color }) => (
+  <Card containerStyle={[styles.rewardCard, { backgroundColor: color }]}>
     <Card.Title style={styles.cardTitle}>{title}</Card.Title>
     <View style={styles.cardInfo}>
       <Text style={styles.cardPoints}>{points} Points</Text>
-      <View style={styles.downloadInfo}>
-      <Text style={styles.cardDownloads}>{downloads} Downloads </Text>
-      <Feather name='download' size={20}/>
-      </View>
-    </View>
-  </Card>
-);
-
-const RecommendedCard = ({ title, points, downloads }) => (
-  <Card containerStyle={styles.recommendedCard}>
-    <Card.Title style={styles.cardTitle}>{title}</Card.Title>
-    <View style={styles.cardInfo}>
-      <Text style={styles.cardPoints}>{points} Points</Text>
-      <View style={styles.downloadInfo}>
-      <Text style={styles.cardDownloads}>{downloads} Downloads</Text>
-      <Feather name='download' size={20}/>
-      </View>
+      <Text style={styles.cardQuantity}>Quantity Left: {quantity_left}</Text>
+      <Text style={styles.cardDescription}>{description}</Text>
     </View>
   </Card>
 );
@@ -33,27 +19,118 @@ const RecommendedCard = ({ title, points, downloads }) => (
 const RewardsScreen = () => {
   const [search, setSearch] = useState('');
   const [isMenuVisible, setMenuVisible] = useState(false);
+  const [rewards, setRewards] = useState([]);
+  const [filteredRewards, setFilteredRewards] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState('');
+
+  const categories = ['class', 'food', 'merch', 'event', 'other'];
 
   const toggleMenu = () => setMenuVisible(!isMenuVisible);
 
-  const popularCourses = [
-    { id: '1', title: "Orator Skills", points: 500, downloads: 1200, color: '#FF6B6B' },
-    { id: '2', title: "Filmmaker Basics", points: 750, downloads: 980, color: '#4ECDC4' },
-    { id: '3', title: "Web Design", points: 600, downloads: 1500, color: '#45B7D1' },
-    { id: '4', title: "Data Science 101", points: 800, downloads: 1100, color: '#F9C80E' },
-    { id: '5', title: "Digital Marketing", points: 550, downloads: 1300, color: '#FF8C42' },
-  ];
+  useEffect(() => {
+    fetchRewards();
+  }, []);
 
-  const recommendedCourses = [
-    { id: '1', title: "Machine Learning Basics", points: 700, downloads: 950 },
-    { id: '2', title: "Graphic Design Fundamentals", points: 450, downloads: 1400 },
-    { id: '3', title: "Financial Planning", points: 600, downloads: 800 },
-    { id: '4', title: "Mobile App Development", points: 850, downloads: 1200 },
-    { id: '5', title: "Creative Writing Workshop", points: 400, downloads: 700 },
-    { id: '6', title: "Blockchain Fundamentals", points: 750, downloads: 900 },
-    { id: '7', title: "Digital Photography", points: 500, downloads: 1100 },
-    { id: '8', title: "Artificial Intelligence Ethics", points: 650, downloads: 750 },
-  ];
+  useEffect(() => {
+    setFilteredRewards(
+      rewards.filter(item => 
+        item.title.toLowerCase().includes(search.toLowerCase())
+      )
+    );
+  }, [search, rewards]);
+
+  const fetchRewards = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://10.1.98.18:5000/rewards');
+      setRewards(removeDuplicates(response.data));
+      setFilteredRewards(removeDuplicates(response.data));
+      setSelectedCategory(''); // Reset the category when fetching all rewards
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch rewards');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPopularRewards = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://10.1.98.18:5000/rewards/popular');
+      setRewards(removeDuplicates(response.data));
+      setFilteredRewards(removeDuplicates(response.data));
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch popular rewards');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+ 
+
+  const fetchRewardsByPoints = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://10.1.98.18:5000/rewards');
+      const sortedRewards = removeDuplicates(response.data).sort((a, b) => a.points - b.points);
+      setRewards(sortedRewards);
+      setFilteredRewards(sortedRewards);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch rewards by points');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRewardsByQuantity = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('http://10.1.98.18:5000/rewards');
+      const sortedRewards = removeDuplicates(response.data).sort((a, b) => a.quantity_left - b.quantity_left);
+      setRewards(sortedRewards);
+      setFilteredRewards(sortedRewards);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch rewards by quantity');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRewardsByCategory = async (category) => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`http://10.1.98.18:5000/rewards/category?category=${category}`);
+      setRewards(removeDuplicates(response.data));
+      setFilteredRewards(removeDuplicates(response.data));
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch rewards by category');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeDuplicates = (data) => {
+    const uniqueTitles = new Set();
+    return data.filter(item => {
+      if (!uniqueTitles.has(item.title)) {
+        uniqueTitles.add(item.title);
+        return true;
+      }
+      return false;
+    });
+  };
+
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    setLoading(true);
+    if (category) {
+      fetchRewardsByCategory(category);
+    } else {
+      fetchRewards();
+    }
+    setMenuVisible(false);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -70,38 +147,37 @@ const RewardsScreen = () => {
           containerStyle={styles.searchBar}
           inputContainerStyle={styles.searchInputContainer}
         />
-        <TouchableOpacity onPress={toggleMenu}>
-          <Icon name="menu" type="feather" color="#FFF" size={24} />
-        </TouchableOpacity>
+        <Icon name="menu" type="feather" color="#FFF" size={24} onPress={toggleMenu} />
       </View>
 
-      <ScrollView>
-        <Text h4 style={styles.sectionTitle}>Popular</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#FFF" />
+      ) : (
         <FlatList
-          horizontal
-          data={popularCourses}
-          renderItem={({ item }) => <PopularCard {...item} />}
-          keyExtractor={item => item.id}
-          showsHorizontalScrollIndicator={false}
+          data={filteredRewards}
+          renderItem={({ item }) => <RewardCard {...item} />}
+          keyExtractor={(item, index) => index.toString()}
+          ListHeaderComponent={<Text h4 style={styles.sectionTitle}>Rewards</Text>}
         />
-
-        <Text h4 style={styles.sectionTitle}>Recommended</Text>
-        <FlatList
-          data={recommendedCourses}
-          renderItem={({ item }) => <RecommendedCard {...item} />}
-          keyExtractor={item => item.id}
-          scrollEnabled={false}
-        />
-      </ScrollView>
+      )}
 
       <Overlay isVisible={isMenuVisible} onBackdropPress={toggleMenu} overlayStyle={styles.overlay}>
         <Text h4 style={styles.overlayTitle}>Filter & Sort</Text>
-        <Button title="Most Popular" buttonStyle={styles.menuButton} />
-        <Button title="Highest Rated" buttonStyle={styles.menuButton} />
-        <Button title="Newest" buttonStyle={styles.menuButton} />
-        <Button title="Lowest to Highest Points" buttonStyle={styles.menuButton} />
-        <Button title="Saved Rewards" buttonStyle={styles.menuButton} />
-        <Button title="Redeemed Rewards" buttonStyle={styles.menuButton} />
+        <Button title="By Popularity" buttonStyle={styles.menuButton} onPress={fetchPopularRewards} />
+        
+        <Button title="By Points" buttonStyle={styles.menuButton} onPress={fetchRewardsByPoints} />
+        <Button title="By Quantity" buttonStyle={styles.menuButton} onPress={fetchRewardsByQuantity} />
+        <Text style={styles.pickerLabel}>By Category:</Text>
+        <Picker
+          selectedValue={selectedCategory}
+          onValueChange={handleCategoryChange}
+          style={styles.picker}
+        >
+          <Picker.Item label="All Categories" value="" />
+          {categories.map((category) => (
+            <Picker.Item key={category} label={category.charAt(0).toUpperCase() + category.slice(1)} value={category} />
+          ))}
+        </Picker>
       </Overlay>
     </SafeAreaView>
   );
@@ -144,16 +220,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 10,
   },
-  popularCard: {
-    width: 200,
-    borderRadius: 10,
-    marginHorizontal: 0,
-    marginLeft:20,
-    marginBottom: 10,
-  },
-  recommendedCard: {
-    backgroundColor: '#8A89C0',
-    borderWidth: 0,
+  rewardCard: {
     borderRadius: 10,
     marginHorizontal: 20,
     marginBottom: 10,
@@ -167,17 +234,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 10,
   },
-  downloadInfo:{
-    flexDirection:'row',
-    justifyContent:'space-between'
-  },
   cardPoints: {
     color: '#FFF',
     fontWeight: 'bold',
   },
-  cardDownloads: {
+  cardQuantity: {
     color: '#FFF',
     opacity: 0.7,
+  },
+  cardDescription: {
+    color: '#FFF',
+    opacity: 0.9,
   },
   overlay: {
     backgroundColor: '#1E2746',
@@ -190,6 +257,16 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     backgroundColor: '#2A365A',
+    marginBottom: 10,
+  },
+  pickerLabel: {
+    color: '#FFF',
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  picker: {
+    backgroundColor: '#2A365A',
+    color: '#FFF',
     marginBottom: 10,
   },
 });
